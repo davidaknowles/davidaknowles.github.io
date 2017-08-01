@@ -1,2 +1,3 @@
 # davidaknowles.github.io
-Github Pages homepage
+
+* My [academic website](http://cs.stanford.edu/people/davidknowles/), with publications
