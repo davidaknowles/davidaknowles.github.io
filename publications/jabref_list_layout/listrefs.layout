@@ -1,0 +1,29 @@
+<li><div id="\format{\bibtexkey}"><em>\format[Authors(LastFirst,NoPunc,InitialsNoSpace),HTMLChars]{\author}</em> (\year), <strong>"\format[HTMLChars]{\title}"</strong>\begin{journal}, \format[HTMLChars]{\journal}.\end{journal}\begin{booktitle}, In \format[HTMLChars]{\booktitle}.\end{booktitle}\begin{howpublished}, \howpublished.\end{howpublished}\begin{school}. Thesis at: \format[HTMLChars]{\school}.\end{school}\begin{address} \format[HTMLChars]{\address}\end{address}\begin{month}, \format[HTMLChars]{\month}, \year.\end{month} \begin{volume} Vol. \volume\end{volume}\begin{number}(\format[FormatPagesForHTML]{\number})\end{number}\begin{pages}, pp. \format[FormatPagesForHTML]{\pages}.\end{pages}\begin{bibbase_note} \format[FormatPagesForHTML]{\bibbase_note}.\end{bibbase_note}</div>
+<div>\begin{abstract}[<a data-toggle="collapse" href="#abs_\format{\bibtexkey}">Abstract</a>]\end{abstract}[<a href="#bib_\format{\bibtexkey}" data-toggle="collapse">BibTeX</a>]\begin{doi} [<a href="\format[DOICheck]{\doi}" target="_blank">DOI</a>]\end{doi}\begin{url} [<a href="\format{\url}" target="_blank">URL</a>]\end{url}\begin{Url_Pdf} [<a href="\format[WrapFileLinks(\r,,pdf)]{\Url_Pdf}" target="_blank">PDF</a>]\end{Url_Pdf}\end{url}\begin{Url_Preprint} [<a href="\format{\Url_Preprint}" target="_blank">Preprint</a>]\end{Url_Preprint}\begin{Url_Code} [<a href="\format{\Url_Code}" target="_blank">Code</a>]\end{Url_Code}\begin{Url_Slides} [<a href="\format{\Url_Slides}" target="_blank">Slides</a>]\end{Url_Slides}</div>
+\begin{abstract}
+<div id="abs_\format{\bibtexkey}" class="collapse">
+	<b>Abstract</b>: \format[HTMLChars]{\abstract}
+</div>\end{abstract}
+<div id="bib_\format{\bibtexkey}" class="collapse">
+<b>BibTeX</b>:
+<pre>
+@\format[ToLowerCase]{\bibtextype}{\bibtexkey,\begin{author}
+  author = {\format[HTMLChars]{\author}}\end{author}\begin{editor},
+  editor = {\format[HTMLChars]{\editor}}\end{editor}\begin{title},
+  title = {\format[HTMLChars]{\title}}\end{title}\begin{booktitle},
+  booktitle = {\format[HTMLChars]{\booktitle}}\end{booktitle}\begin{journal},
+  journal = {\format[HTMLChars]{\journal}}\end{journal}\begin{publisher},
+  publisher = {\format[HTMLChars]{\publisher}}\end{publisher}\begin{school},
+  school = {\format[HTMLChars]{\school}}\end{school}\begin{year},
+  year = {\format[HTMLChars]{\year}}\end{year}\begin{volume},
+  volume = {\format[HTMLChars]{\volume}}\end{volume}\begin{number},
+  number = {\format[HTMLChars]{\number}}\end{number}\begin{pages},
+  pages = {\format[HTMLChars]{\pages}}\end{pages}\begin{edition},
+  edition = {\format[HTMLChars]{\edition}}\end{edition}\begin{note},
+  note = {\format[HTMLChars]{\note}}\end{note}\begin{url},
+  url = {\format[HTMLChars]{\url}}\end{url}\begin{doi},
+  doi = {\format[DOIStrip]{\doi}}\end{doi}
+}
+</pre>
+</div>
+</li>

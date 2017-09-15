@@ -1,0 +1,49 @@
+\documentclass{article}
+
+\usepackage[margin=1in]{geometry}
+
+\usepackage[backend=biber,
+	maxbibnames=99,
+	isbn=false,
+	url=false,
+	eprint=false,
+	sorting=none,
+	defernumbers=true]{biblatex}
+	
+\addbibresource{reordered.bib}
+
+\DeclareSourcemap{
+  \maps[datatype=bibtex]{
+    \map{
+      \step[fieldsource=bibbase_note, final]
+      \step[fieldset=addendum, origfieldval, final]
+      \step[fieldset=bibbase_note, null]
+    }
+  }
+}
+
+% \DeclareFieldFormat{labelnumberwidth}{-}
+% \setlength{\biblabelsep}{0pt}
+
+\usepackage{xstring}
+\newcommand{\makeauthorsbold}[1]{%
+\DeclareNameFormat{author}{%
+  \ifnumequal{\value{listcount}}{1}
+    {\ifnumequal{\value{liststop}}{1}
+      {\expandafter\IfSubStr{#1}{##1}{\textbf{##1\addcomma\addspace ##4\addcomma\isdot}}{##1\addcomma\addspace ##4\addcomma\isdot}}
+      {\expandafter\IfSubStr{#1}{##1}{\textbf{##1\addcomma\addspace ##4}}{##1\addcomma\addspace ##4}}}
+    {\ifnumless{\value{listcount}}{\value{liststop}}
+      {\expandafter\IfSubStr{#1}{##1}{\textbf{\addcomma\addspace ##1\addcomma\addspace ##4}}{\addcomma\addspace ##1\addcomma\addspace ##4}}
+          {\expandafter\IfSubStr{#1}{##1}{\textbf{\addcomma\addspace ##1\addcomma\addspace ##4\addcomma\isdot}}{\addcomma\addspace ##1\addcomma\addspace ##4\addcomma\isdot}}%
+    }%
+}%
+}
+\makeauthorsbold{Knowles*}
+
+
+\begin{document}
+\nocite{*}
+\printbibliography[title=Peer-reviewed journal articles (genetics), type=article, keyword=Genetics, sorting=none]
+\printbibliography[title=Peer-reviewed journal articles (machine learning), type=article, keyword=Machine Learning/Statistics, sorting=none]
+\printbibliography[title=Peer-reviewed conference papers (machine learning), type=inproceedings, keyword=Machine Learning/Statistics, sorting=none]
+\end{document}

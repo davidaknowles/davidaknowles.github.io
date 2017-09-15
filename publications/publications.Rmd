@@ -1,0 +1,10 @@
+---
+title: "My Publications"
+output: html_document
+bibliography: publications.bib
+biblio-style: plain
+pandoc_args: ["--natbib"]
+nocite: *
+---
+
+## References
