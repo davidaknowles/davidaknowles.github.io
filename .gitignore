@@ -1,0 +1,7 @@
+*.so
+*.o
+*~
+.DS_Store
+*.tgz
+*.gz
+*.pdf
