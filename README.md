@@ -13,9 +13,11 @@ Photo by <https://unsplash.com/@davidhiggins>
 # Compile (Mac OS X)
 
 Set jabref preference to sort by original order. 
+```
 alias jabref='java -jar /Applications/JabRef.app/Contents/java/app/JabRef-4.0-beta3.jar'
 /publications/build_pubs.sh
 ./build.sh
+```
 
 # Original html5up README
 
