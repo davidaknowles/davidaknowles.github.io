@@ -36,14 +36,15 @@
       {\expandafter\IfSubStr{#1}{##1}{\textbf{\addcomma\addspace ##1\addcomma\addspace ##4}}{\addcomma\addspace ##1\addcomma\addspace ##4}}
           {\expandafter\IfSubStr{#1}{##1}{\textbf{\addcomma\addspace ##1\addcomma\addspace ##4\addcomma\isdot}}{\addcomma\addspace ##1\addcomma\addspace ##4\addcomma\isdot}}%
     }%
-}%
+}% 
 }
 \makeauthorsbold{Knowles*}
 
 
 \begin{document}
 \nocite{*}
-\printbibliography[title=Peer-reviewed journal articles (genetics), type=article, keyword=Genetics, sorting=none]
+ \printbibliography[title=Peer-reviewed journal articles (genetics), type=article, keyword=Genetics, sorting=none]
 \printbibliography[title=Peer-reviewed journal articles (machine learning), type=article, keyword=mlstats, sorting=none]
 \printbibliography[title=Peer-reviewed conference papers (machine learning), type=inproceedings, keyword=mlstats, sorting=none]
+\printbibliography[title=Working Under submission, type=article, keyword=working, sorting=none]
 \end{document}
