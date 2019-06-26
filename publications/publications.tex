@@ -25,20 +25,6 @@
 % \DeclareFieldFormat{labelnumberwidth}{-}
 % \setlength{\biblabelsep}{0pt}
 
-\usepackage{xstring}
-\newcommand{\makeauthorsbold}[1]{%
-\DeclareNameFormat{author}{%
-  \ifnumequal{\value{listcount}}{1}
-    {\ifnumequal{\value{liststop}}{1}
-      {\expandafter\IfSubStr{#1}{##1}{\textbf{##1\addcomma\addspace ##4\addcomma\isdot}}{##1\addcomma\addspace ##4\addcomma\isdot}}
-      {\expandafter\IfSubStr{#1}{##1}{\textbf{##1\addcomma\addspace ##4}}{##1\addcomma\addspace ##4}}}
-    {\ifnumless{\value{listcount}}{\value{liststop}}
-      {\expandafter\IfSubStr{#1}{##1}{\textbf{\addcomma\addspace ##1\addcomma\addspace ##4}}{\addcomma\addspace ##1\addcomma\addspace ##4}}
-          {\expandafter\IfSubStr{#1}{##1}{\textbf{\addcomma\addspace ##1\addcomma\addspace ##4\addcomma\isdot}}{\addcomma\addspace ##1\addcomma\addspace ##4\addcomma\isdot}}%
-    }%
-}% 
-}
-\makeauthorsbold{Knowles*}
 
 
 \begin{document}
