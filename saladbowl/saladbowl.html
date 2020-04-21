@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1" name="viewport">
+  <title>Salad Bowl</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!--[if lte IE 8]><script src="../assets/js/ie/html5shiv.js"></script><![endif]-->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <!--[if lte IE 8]><link rel="stylesheet" href="../assets/css/ie8.css" /><![endif]-->
+  <script src="https://chr15m.github.io/bugout/bugout.min.js" type="application/javascript"></script>
+</head>
+<body>
+<div class="container">
+<h2>Welcome to Salad Bowl!</h2>
+  <input id="input" maxlength="279" placeholder="Word/phrase..."/>
+  <button id="send">Add word</button>
+  <button id="draw">Draw word</button>
+  <button id="clear">Clear all</button>
+  <pre id="word"> </pre>
+  <pre id="log"></pre>
+  <pre id="words"></pre>
+  <pre id="bowl"></pre>
+</div>
+</body>
+<script>
+  function log(message) {
+    document.getElementById("log").textContent += message + "\n";
+  }
+
+  function set_word_count(numwords) {
+    document.getElementById("words").textContent = "Total words: " + numwords;
+  }
+
+  function set_bowl_count(numwords) {
+    document.getElementById("bowl").textContent = "Words left in bowl: " + numwords;
+  }
+
+  function set_word(word) {
+    document.getElementById("word").textContent = word;
+  }
+
+  var serveraddress = window.location.hash.substr(1);
+  var isserver = serveraddress=="";
+  if (!serveraddress) {
+    serveraddress = localStorage["saladbowl-seed"];
+  }
+  var b = Bugout(serveraddress, {"announce": ["wss://hub.bugout.link"]});  // wss://tracker.openwebtorrent.com
+
+  document.getElementById("clear").style.visibility= isserver ? "visible" : "hidden";
+
+  if (isserver) {
+
+    if (localStorage["saladbowl"]) {
+      words = JSON.parse(localStorage["words"]);
+      bowl = JSON.parse(localStorage["bowl"]);
+    }
+    if (typeof(words) != "object" || !words["length"]) {
+      words = [];
+    }
+    if (typeof(bowl) != "object" || !bowl["length"]) {
+      bowl = [];
+    }
+    set_word_count(words.length);
+    set_bowl_count(bowl.length);
+    
+    log("Tell your friends to connect here:");
+    log(document.location.href + "#" + b.address());
+    b.register("draw", function(address, message, cb) {
+      log("draw")
+      if (words.length == 0) {
+        cb("No words added yet!");
+        return;
+      }
+      if (bowl.length == 0) {
+        cb("Bowl is empty, end of the round!");
+        bowl = words.slice(0); // clone (shallow copy)
+        return;
+      }
+      to_pick = Math.floor(Math.random()*bowl.length); 
+      random_word = bowl.splice(to_pick,1);
+      localStorage["bowl"] = JSON.stringify(bowl);
+      cb(random_word);
+      set_bowl_count(bowl.length);
+    })
+    b.on("message", function(address, message) {
+      words.push(message);
+      bowl.push(message);
+      localStorage["bowl"] = JSON.stringify(bowl);
+      localStorage["words"] = JSON.stringify(words);
+      set_word_count(words.length);
+      set_bowl_count(bowl.length);
+    })
+  }
+
+  function send_word() {
+    input = document.getElementById("input");
+    if (input.value.length > 0) {
+      b.send(input.value)
+    }
+    input.value = "";
+  }
+
+  document.getElementById("send").onclick = ev =>  send_word() ;
+
+  document.getElementById("clear").onclick = ev => {
+    words = [];
+    bowl = [];
+    set_word_count(words.length);
+    set_bowl_count(bowl.length);
+  };
+
+  document.getElementById("draw").onclick = ev => {
+    b.rpc("draw", null, function(message) {
+      set_word(message);
+    });
+  };
+
+  document.getElementById("input").onkeydown = ev => {
+    if (ev.keyCode == 13) {
+      send_word();
+      ev.preventDefault();
+    } 
+  }
+
+</script>
+</html>
