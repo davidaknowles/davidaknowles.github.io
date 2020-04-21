@@ -50,9 +50,26 @@
 
   document.getElementById("clear").style.visibility= isserver ? "visible" : "hidden";
 
+  function draw(cb) {
+    if (words.length == 0) {
+      cb("No words added yet!");
+      return;
+    }
+    if (bowl.length == 0) {
+      cb("Bowl is empty, end of the round!");
+      bowl = words.slice(0); // clone (shallow copy)
+      return;
+    }
+    to_pick = Math.floor(Math.random()*bowl.length); 
+    random_word = bowl.splice(to_pick,1);
+    localStorage["bowl"] = JSON.stringify(bowl);
+    cb(random_word);
+    set_bowl_count(bowl.length);
+  }
+
   if (isserver) {
 
-    if (localStorage["saladbowl"]) {
+    if (localStorage["words"] && localStorage["bowl"]) {
       words = JSON.parse(localStorage["words"]);
       bowl = JSON.parse(localStorage["bowl"]);
     }
@@ -68,21 +85,7 @@
     log("Tell your friends to connect here:");
     log(document.location.href + "#" + b.address());
     b.register("draw", function(address, message, cb) {
-      log("draw")
-      if (words.length == 0) {
-        cb("No words added yet!");
-        return;
-      }
-      if (bowl.length == 0) {
-        cb("Bowl is empty, end of the round!");
-        bowl = words.slice(0); // clone (shallow copy)
-        return;
-      }
-      to_pick = Math.floor(Math.random()*bowl.length); 
-      random_word = bowl.splice(to_pick,1);
-      localStorage["bowl"] = JSON.stringify(bowl);
-      cb(random_word);
-      set_bowl_count(bowl.length);
+      draw(cb);
     })
     b.on("message", function(address, message) {
       words.push(message);
@@ -112,9 +115,10 @@
   };
 
   document.getElementById("draw").onclick = ev => {
-    b.rpc("draw", null, function(message) {
-      set_word(message);
-    });
+    if (isserver)
+      draw(set_word);
+    else
+      b.rpc("draw", null, set_word); 
   };
 
   document.getElementById("input").onkeydown = ev => {
