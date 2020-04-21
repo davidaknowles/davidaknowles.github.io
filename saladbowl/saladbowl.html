@@ -10,6 +10,16 @@
   <link rel="stylesheet" href="../assets/css/main.css" />
   <!--[if lte IE 8]><link rel="stylesheet" href="../assets/css/ie8.css" /><![endif]-->
   <script src="https://chr15m.github.io/bugout/bugout.min.js" type="application/javascript"></script>
+  <style>
+    pre { 
+      line-height: 1.3;
+      margin: 1em 0 0em 0;
+    }
+    a.small {
+      font-size: 80%;
+    }
+  </style>
+
 </head>
 <body>
 <div class="container">
@@ -20,8 +30,10 @@
   <button id="clear">Clear all</button>
   <pre id="word"> </pre>
   <pre id="log"></pre>
+  <a id="join" class="small" href=""></a>
   <pre id="words"></pre>
   <pre id="bowl"></pre>
+  <pre id="connected">Connected to 0 player(s).</pre>
   <p style="text-align:right">Salad Bowl is built on <a href="https://github.com/chr15m/bugout">bugout</a>.</p>
 </div>
 </body>
@@ -30,45 +42,66 @@
     document.getElementById("log").textContent += message + "\n";
   }
 
-  function set_word_count(numwords) {
-    document.getElementById("words").textContent = "Total words: " + numwords;
+  function set_url(url) {
+    document.getElementById("join").text = url;
+    document.getElementById("join").href = url;
   }
 
-  function set_bowl_count(numwords) {
-    document.getElementById("bowl").textContent = "Words left in bowl: " + numwords;
+  function set_counts(numwords,bowlsize) {
+    document.getElementById("words").textContent = "Total words: " + numwords;
+    document.getElementById("bowl").textContent = "Words left in bowl: " + bowlsize;
   }
 
   function set_word(word) {
     document.getElementById("word").textContent = word;
   }
 
-  var serveraddress = window.location.hash.substr(1);
-  var isserver = serveraddress=="";
-  if (!serveraddress) {
-    serveraddress = localStorage["saladbowl-seed"];
+  function updateWires(count) {
+    document.getElementById("connected").textContent = "Connected to " + count + " player(s).";
   }
+
+  var serveraddress = window.location.hash.substr(1);
+  var isserver = serveraddress == "";
+  // if (isserver) {
+  //   serveraddress = localStorage["saladbowl-seed"];
+  //   log("server address: " + serveraddress)
+  // }
   var b = Bugout(serveraddress, {"announce": ["wss://hub.bugout.link"]});  // wss://tracker.openwebtorrent.com
+  
+  b.heartbeat(1000); // check connectivity every 1s
 
   document.getElementById("clear").style.visibility= isserver ? "visible" : "hidden";
 
-  function draw(cb) {
-    if (words.length == 0) {
-      cb("No words added yet!");
-      return;
-    }
-    if (bowl.length == 0) {
-      cb("Bowl is empty, end of the round!");
-      bowl = words.slice(0); // clone (shallow copy)
-      return;
-    }
-    to_pick = Math.floor(Math.random()*bowl.length); 
-    random_word = bowl.splice(to_pick,1);
-    localStorage["bowl"] = JSON.stringify(bowl);
-    cb(random_word);
-    set_bowl_count(bowl.length);
-  }
+  b.on("wireseen", updateWires);
+  b.on("wireleft", updateWires);
+  b.on("left", updateWires);
 
   if (isserver) {
+
+    function draw(cb) {
+      if (words.length == 0) {
+        cb("No words added yet!");
+        return;
+      }
+      if (bowl.length == 0) {
+        cb("Bowl is empty, end of the round! Click `Draw word` to start the next round.");
+        bowl = words.slice(0); // clone (shallow copy)
+        return;
+      }
+      to_pick = Math.floor(Math.random()*bowl.length); 
+      random_word = bowl.splice(to_pick,1);
+      localStorage["bowl"] = JSON.stringify(bowl);
+      cb(random_word);
+      send_counts();
+    }
+
+    function send_counts() { 
+      set_counts(words.length,bowl.length);
+      b.send(JSON.stringify(["counts",[words.length,bowl.length]]));
+    }
+
+    // b.on("connections", c => log("connections: " + c) );
+    localStorage["saladbowl-seed"] = b.address(); 
 
     if (localStorage["words"] && localStorage["bowl"]) {
       words = JSON.parse(localStorage["words"]);
@@ -80,40 +113,62 @@
     if (typeof(bowl) != "object" || !bowl["length"]) {
       bowl = [];
     }
-    set_word_count(words.length);
-    set_bowl_count(bowl.length);
+    set_counts(words.length,bowl.length);
     
     log("Tell your friends to connect here:");
-    log(document.location.href + "#" + b.address());
-    b.register("draw", function(address, message, cb) {
-      draw(cb);
-    })
-    b.on("message", function(address, message) {
-      words.push(message);
-      bowl.push(message);
+    set_url(document.location.href + "#" + b.address());
+    b.register("draw", (address, message, cb) => draw(cb) );
+
+    b.on("seen", address => send_counts() );
+
+    document.getElementById("clear").onclick = ev => {
+      words = [];
+      bowl = [];
+      set_counts(words.length,bowl.length);
+      send_counts();
+    };
+  }
+
+
+
+  b.on("message", function(address, message) {
+    message = JSON.parse(message);
+    if (message[0] == "word" && isserver && b.address != address) { 
+      words.push(message[1]);
+      bowl.push(message[1]);
       localStorage["bowl"] = JSON.stringify(bowl);
       localStorage["words"] = JSON.stringify(words);
-      set_word_count(words.length);
-      set_bowl_count(bowl.length);
-    })
-  }
+      send_counts(); 
+    } else if (message[0] == "counts") { 
+      set_counts(message[1][0],message[1][1]);
+    }
+
+  });
 
   function send_word() {
     input = document.getElementById("input");
     if (input.value.length > 0) {
-      b.send(input.value)
+      b.send(JSON.stringify(["word",input.value]));
+    }
+    if (isserver) {
+      words.push(input.value);
+      bowl.push(input.value);
+      localStorage["bowl"] = JSON.stringify(bowl);
+      localStorage["words"] = JSON.stringify(words);
+      set_counts(words.length,bowl.length);
+      send_counts(); 
     }
     input.value = "";
   }
 
   document.getElementById("send").onclick = ev =>  send_word() ;
 
-  document.getElementById("clear").onclick = ev => {
-    words = [];
-    bowl = [];
-    set_word_count(words.length);
-    set_bowl_count(bowl.length);
-  };
+  document.getElementById("input").onkeydown = ev => {
+    if (ev.keyCode == 13) {
+      send_word();
+      ev.preventDefault();
+    } 
+  }
 
   document.getElementById("draw").onclick = ev => {
     if (isserver)
@@ -122,12 +177,6 @@
       b.rpc("draw", null, set_word); 
   };
 
-  document.getElementById("input").onkeydown = ev => {
-    if (ev.keyCode == 13) {
-      send_word();
-      ev.preventDefault();
-    } 
-  }
 
 </script>
 </html>
