@@ -18,16 +18,27 @@
     a.small {
       font-size: 80%;
     }
+    h2 { 
+      text-align: center;
+    }
+    div.buttons {
+      text-align: center;
+    }
   </style>
 
 </head>
 <body>
 <div class="container">
 <h2>Welcome to Salad Bowl!</h2>
-  <input id="input" maxlength="279" placeholder="Word/phrase..."/>
+<div class="buttons">
+  <input id="input" maxlength="279" size="85" placeholder="Word/phrase..."/>
+</div>
+<pre> </pre>
+<div class="buttons">
   <button id="send">Add word</button>
   <button id="draw">Draw word</button>
   <button id="clear">Clear all</button>
+</div>
   <pre id="word"> </pre>
   <pre id="log"></pre>
   <a id="join" class="small" href=""></a>
@@ -60,13 +71,17 @@
     document.getElementById("connected").textContent = "Connected to " + count + " player(s).";
   }
 
+  bugout_opts = {"announce": ["wss://hub.bugout.link"]} ; // wss://tracker.openwebtorrent.com
+  
   var serveraddress = window.location.hash.substr(1);
   var isserver = serveraddress == "";
-  // if (isserver) {
-  //   serveraddress = localStorage["saladbowl-seed"];
-  //   log("server address: " + serveraddress)
-  // }
-  var b = Bugout(serveraddress, {"announce": ["wss://hub.bugout.link"]});  // wss://tracker.openwebtorrent.com
+  if (isserver) {
+    bugout_opts["seed"] = localStorage["saladbowl-seed"]; 
+    b = Bugout(bugout_opts); 
+    localStorage["saladbowl-seed"] = b.seed;
+  } else {
+    b = Bugout(serveraddress, bugout_opts);  
+  }
   
   b.heartbeat(1000); // check connectivity every 1s
 
@@ -101,7 +116,7 @@
     }
 
     // b.on("connections", c => log("connections: " + c) );
-    localStorage["saladbowl-seed"] = b.address(); 
+    
 
     if (localStorage["words"] && localStorage["bowl"]) {
       words = JSON.parse(localStorage["words"]);
@@ -116,7 +131,9 @@
     set_counts(words.length,bowl.length);
     
     log("Tell your friends to connect here:");
+
     set_url(document.location.href + "#" + b.address());
+
     b.register("draw", (address, message, cb) => draw(cb) );
 
     b.on("seen", address => send_counts() );
@@ -147,10 +164,10 @@
 
   function send_word() {
     input = document.getElementById("input");
-    if (input.value.length > 0) {
+    if (input.value.length == 0) return;
+    if (!isserver) {
       b.send(JSON.stringify(["word",input.value]));
-    }
-    if (isserver) {
+    } else {
       words.push(input.value);
       bowl.push(input.value);
       localStorage["bowl"] = JSON.stringify(bowl);
