@@ -93,7 +93,7 @@
 
   if (isserver) {
 
-    function draw(cb) {
+    function draw(address,cb) {
       if (words.length == 0) {
         cb("No words added yet!");
         return;
@@ -107,6 +107,7 @@
       random_word = bowl.splice(to_pick,1);
       localStorage["bowl"] = JSON.stringify(bowl);
       cb(random_word);
+      b.send(JSON.stringify(["other_drew",[address,bowl.length]]));
       send_counts();
     }
 
@@ -134,7 +135,7 @@
 
     set_url(document.location.href + "#" + b.address());
 
-    b.register("draw", (address, message, cb) => draw(cb) );
+    b.register("draw", (address, message, cb) => draw(address, cb) );
 
     b.on("seen", address => send_counts() );
 
@@ -158,8 +159,11 @@
       send_counts(); 
     } else if (message[0] == "counts") { 
       set_counts(message[1][0],message[1][1]);
-    }
-
+    } else if (message[0] == "other_drew") {
+      if (b.address() != message[1][0]) {
+        set_word("Someone else drew a word. " + ((message[1][1]==0) ? "The bowl is now empty." : ""));
+      }
+    };
   });
 
   function send_word() {
@@ -189,7 +193,7 @@
 
   document.getElementById("draw").onclick = ev => {
     if (isserver)
-      draw(set_word);
+      draw(b.address(), set_word);
     else
       b.rpc("draw", null, set_word); 
   };
