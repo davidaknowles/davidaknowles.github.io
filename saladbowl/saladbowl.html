@@ -31,7 +31,7 @@
 <div class="container">
 <h2>Welcome to Salad Bowl!</h2>
 <div class="buttons">
-  <input id="input" maxlength="279" size="85" placeholder="Word/phrase..."/>
+  <input id="input" maxlength="279" size="85" placeholder="Connecting, please wait..."/>
 </div>
 <pre> </pre>
 <div class="buttons">
@@ -67,12 +67,9 @@
     document.getElementById("word").textContent = word;
   }
 
-  function updateWires(count) {
-    document.getElementById("connected").textContent = "Connected to " + count + " player(s).";
-  }
-
   bugout_opts = {"announce": ["wss://hub.bugout.link"]} ; // wss://tracker.openwebtorrent.com
   
+  var connected = false; 
   var serveraddress = window.location.hash.substr(1);
   var isserver = serveraddress == "";
   if (isserver) {
@@ -81,6 +78,14 @@
     localStorage["saladbowl-seed"] = b.seed;
   } else {
     b = Bugout(serveraddress, bugout_opts);  
+  }
+
+  function updateWires(count) {
+    if (connected == false) {
+        connected = true;
+        document.getElementById("input").placeholder = "Connected! Type your first word here." + ((isserver) ? " (You're the host btw!)." : "");
+    }
+    document.getElementById("connected").textContent = "Connected to " + count + " player(s).";
   }
   
   b.heartbeat(1000); // check connectivity every 1s
@@ -116,8 +121,7 @@
       b.send(JSON.stringify(["counts",[words.length,bowl.length]]));
     }
 
-    // b.on("connections", c => log("connections: " + c) );
-    
+    b.on("connections", updateWires);
 
     if (localStorage["words"] && localStorage["bowl"]) {
       words = JSON.parse(localStorage["words"]);
